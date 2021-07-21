@@ -1,0 +1,56 @@
+## Definition file for Singularity v3.6
+## Tell the Singularity bootstrap agent to pull CentOS 7 from the
+## Container Library.
+BootStrap: yum
+OSVersion: 7
+MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearch/
+Include: yum
+
+## Setup a response in case someone queries "help" for this container
+%help
+Please contact Paul Arias for help: pgarias@oarc.rutgers.edu
+
+## Commands executed on the host system outside of the container after
+## the base OS has been installed. Need to copy the modified Makefile.mpi
+## because the default version of gcc used with the mvapich2 installation
+## requires --std=c++11 flag to be added to Makefile.mpi. See LAMMPS
+## installation instructions for more details
+%files 
+  Makefile.mpi /opt
+
+%setup
+  cd $SINGULARITY_ROOTFS/opt
+  wget http://lammps.sandia.gov/tars/lammps-stable.tar.gz
+
+## Here is where you can download files from the internet with tools
+## like git and wget, install new software and libraries, write
+## configuration files, create new directories, etc.
+
+%post
+  yum -y groupinstall "Development Tools"
+  yum -y install hwloc-devel libibmad-devel
+  yum -y install mvapich2-devel
+  yum -y install which
+
+  MVAPICH_PATH=/usr/lib64/mvapich2
+ 
+  export PATH=$MVAPICH_PATH/bin:$PATH
+  export LD_LIBRARY_PATH=$MVAPICH_PATH/lib:$LD_LIBRARY_PATH
+  export MANPATH=$MVAPICH_PATH-x86_64/man:$MANPATH
+
+  mkdir -p /opt/lammps
+  cd /opt/lammps
+  tar xf ../lammps-stable.tar.gz --strip-components 1
+  cd src
+
+## Add the Makefile.mpi file to the correct location in 
+## the installation path for LAMMPS
+  cp /opt/Makefile.mpi MAKE/Makefile.mpi
+  make yes-granular |& tee log.make_yes_granular
+  make mpi |& tee log.make_mpi
+
+## Commands here are written to a file within the container that is
+## executed when the container image is run.
+
+%runscript
+  /opt/lammps/src/lmp_mpi "$@"

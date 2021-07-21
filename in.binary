@@ -1,0 +1,46 @@
+# For enabling GPU hardware
+#newton          off
+#package gpu force/neigh 0 1 1
+
+# For ease of use, define some variables
+variable temperature_start equal 5.0
+variable temperature_final equal 1.0
+
+# System/Code initialization
+units           lj
+atom_style      atomic
+read_data       binary.data
+velocity        all create ${temperature_start} 12345
+
+# Interaction Definition
+pair_style      lj/cut 2.5
+pair_modify	shift yes
+pair_coeff      1 1 1.0 1.0 2.5
+pair_coeff      1 2 1.0 1.0 1.122462050902811
+pair_coeff      2 2 1.0 1.0 2.5
+neighbor        2.0 bin
+neigh_modify    check yes
+
+###=== Stage 1, randomize the system at high temperature
+ # Integrator Definition
+  timestep        0.005
+  fix             1       all     nvt      temp ${temperature_start}      ${temperature_start}     0.5 
+ 
+ # set target box size
+  variable L2 equal 9.5
+  fix             2 all deform 1 x final -${L2} ${L2} y final -${L2} ${L2} z final -${L2} ${L2} units box
+  run 5000
+
+ # clean up fixes
+  unfix 2
+  unfix 1
+##=== Stage 2, cool the system to enable phase separation
+
+ fix             1       all     nvt      temp ${temperature_start}      ${temperature_final}     0.5
+
+ # Run Parameters
+ thermo          25000
+ thermo_modify norm yes
+ dump            1 all atom 500 binary.lammpstrj
+ run 500000
+
