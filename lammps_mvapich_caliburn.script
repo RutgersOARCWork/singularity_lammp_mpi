@@ -4,7 +4,7 @@
 #SBATCH -e lammps_mvapich.%J.stderr
 #SBATCH -p main
 #SBATCH -N 1
-#SBATCH -n 24
+#SBATCH -n 12
 #SBATCH -t 00:30:00
 
 
