@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH -J lammp_mvapich
+#SBATCH -o lammp_mvapich.%J.stdout
+#SBATCH -e lammp_mvapich.%J.stderr
+#SBATCH -p main
+#SBATCH -N 1
+#SBATCH -n 12
+#SBATCH -t 00:30:00
+
+
+module purge
+module load singularity/3.6.4 mvapich/2.2-gcc-4.8.5
+cd $HOME/singularity/lammpstestcase
+
+echo "SLURM_JOB_ID 	 "  $SLURM_JOB_ID
+echo "SLURM_JOB_NAME "   $SLURM_JOB_NAME
+echo "SLURM_NNODES 	 "  $SLURM_NNODES
+echo "SLURM_NTASKS 	 "  $SLURM_NTASKS
+echo "SLURM_NODELIST "   $SLURM_NODELIST
+echo "SLURM_JOB_PARTITION 	 "  $SLURM_JOB_PARTITION
+echo "SLURM_SUBMIT_DIR "  $SLURM_SUBMIT_DIR
+echo "SLURM_TASKS_PER_NODE " $SLURM_TASKS_PER_NODE 
+
+#mpirun -n $SLURM_NTASKS ./mpi_hello_world
+srun  --mpi=pmi2 singularity run lammps_mvapich.sif < in.binary
