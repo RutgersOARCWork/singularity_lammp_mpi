@@ -9,6 +9,22 @@ Become sudo and run the following commands:
 ~$ singularity build lammps_mvapich_v1.sif lammps_mvapich_v1.def  
 ```
 
+If you are just using this yourself, you can change the ownership:
+
+```
+~$ chown $USER:$USER lammps_mvapich_v1.sif
+```
+
+Or, you can change the permissions and make available globally
+
+```
+~$ chmod 755 lammps_mvapich_v1.sif
+```
+
+You can then submit the job using `sbatch`:
+```
+~$ sbatch lammps_mvapich_amarel.script
+```
 
 ## On Caliburn
 
