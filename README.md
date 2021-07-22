@@ -33,5 +33,5 @@ Or, you can change the permissions and make available globally
 
 You can then submit the job using `sbatch`:  
 ```
-sbatch lammps_mvapich_caliburn.script
+~$ sbatch lammps_mvapich_caliburn.script
 ```
